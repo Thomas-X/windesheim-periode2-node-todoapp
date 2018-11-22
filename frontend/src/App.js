@@ -1,38 +1,41 @@
 import React, {Component} from 'react';
-import { gql } from 'apollo-boost';
-import { Query } from 'react-apollo';
+import {gql} from 'apollo-boost';
+import {BrowserRouter as Router, Route, Link} from "react-router-dom";
 
-const GET_PERSON = gql`
-	query GET_PERSON($id: Int!){
-		getPerson(id: $id) {
-			name,
-			dateofbirth
-		}
-	}
-`;
+// const GET_PERSON = gql`
+// 	query GET_PERSON($id: Int!){
+// 		getPerson(id: $id) {
+// 			name,
+// 			dateofbirth
+// 		}
+// 	}
+//`;
+
+const Kitties = () => (
+	<div>
+		<h1>hi from kitties</h1>
+		<img src={'https://lorempixel.com/800/600/cats/?200'} style={{
+			width: '50%',
+			height: '50%',
+		}}/>
+	</div>
+);
 
 class App extends Component {
 
 	render() {
 		return (
-			<Query variables={{ id: 1337 }} query={GET_PERSON}>
-				{({ loading, error, data }) => {
-					if (loading) return <div>Loading...</div>;
-					if (error) {
-						console.log(error)
-						return <div>Error :(</div>;
-					}
+			<div>
+				<Router>
+					<div>
+						<Route exact path={'/kitties'} component={Kitties}/>
 
-					return (
-						<>
-							<h1>hello</h1>
-						<pre>
-							{JSON.stringify(data)}
-						</pre>
-						</>
-					)
-				}}
-			</Query>
+						<Link to={'/kitties'}>
+							Go to kitties !
+						</Link>
+					</div>
+				</Router>
+			</div>
 		);
 	}
 }

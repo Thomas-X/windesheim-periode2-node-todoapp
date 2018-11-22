@@ -1,13 +1,14 @@
-import Person from "./resolvers/Person";
+import Todo from './resolvers/Todo';
 
 export default {
 	Query: {
-		getPerson: Person.getPerson,
-		getPersons: Person.getPersons,
+		getTodo: Todo.getTodo,
+		getTodos: Todo.getTodos,
 	},
+
 	Mutation: {
-		createPerson: Person.createPerson,
-		updatePerson: Person.updatePerson,
-		deletePerson: Person.deletePerson,
+		createTodo: Todo.createTodo,
+		updateTodo: Todo.updateTodo,
+		deleteTodo: Todo.deleteTodo,
 	}
 };

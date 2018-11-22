@@ -32,6 +32,6 @@
     "merge-graphql-schemas": "^1.5.7",
     "mongoose": "^5.3.12",
     "mysql2": "^1.6.1",
-    "sequelize": "^4.41.0"
+    "sequelize": "^4.41.2"
   }
 }

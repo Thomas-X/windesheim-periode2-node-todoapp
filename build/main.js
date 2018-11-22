@@ -62,41 +62,51 @@ module.exports =
 /******/ 	__webpack_require__.p = "/";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 2);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports) {
-
-module.exports = require("apollo-server-express");
-
-/***/ }),
-/* 1 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose__ = __webpack_require__(11);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_mongoose___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_mongoose__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_lowdb__ = __webpack_require__(12);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_lowdb___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_lowdb__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_lowdb_adapters_FileSync__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_lowdb_adapters_FileSync___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_lowdb_adapters_FileSync__);
-
-
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_sequelize__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_sequelize___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_sequelize__);
 
 
 class DB {
+
+	/*
+ * TODO move this to a logical location
+ * Since webpack moves all imports at the top of the file and there's no guarantee that dotenv will be run as first unless we init in the constructor of the DB class
+ * */
 	constructor() {
 		this.connect = () => {
-			const adapter = new __WEBPACK_IMPORTED_MODULE_2_lowdb_adapters_FileSync___default.a('db.json');
-			return __WEBPACK_IMPORTED_MODULE_1_lowdb___default()(adapter);
+			const {
+				DB_HOST,
+				DB_DIALECT,
+				DB_USERNAME,
+				DB_PASSWORD,
+				DB_PORT,
+				DB_NAME
+			} = process.env;
+			const sequelize = new __WEBPACK_IMPORTED_MODULE_0_sequelize___default.a(DB_NAME, DB_USERNAME, DB_PASSWORD, {
+				host: DB_HOST,
+				dialect: DB_DIALECT,
+				port: DB_PORT,
+				pool: {
+					max: 5,
+					min: 0,
+					acquire: 30000,
+					idle: 10000
+				},
+				// http://docs.sequelizejs.com/manual/tutorial/querying.html#operators
+				operatorsAliases: false
+			});
+			return sequelize;
 		};
 
-		this.connectMongo = () => {
-			const { DB_DIALECT, DB_PORT, DB_HOST, DB_NAME } = process.env;
-			__WEBPACK_IMPORTED_MODULE_0_mongoose___default.a.connect(`${DB_DIALECT}://${DB_HOST}:${DB_PORT}/${DB_NAME}`);
-		};
+		__webpack_require__(12).config();
 	}
 
 }
@@ -104,75 +114,97 @@ class DB {
 /* harmony default export */ __webpack_exports__["a"] = (new DB().connect());
 
 /***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
+/* 1 */
+/***/ (function(module, exports) {
 
-module.exports = __webpack_require__(3);
-
+module.exports = require("apollo-server-express");
 
 /***/ }),
-/* 3 */
+/* 2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__getServerData__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_express__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_express___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_express__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_apollo_server_express__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_apollo_server_express___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_apollo_server_express__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__connector_DB__ = __webpack_require__(1);
-// load .env file into process.env global
-__webpack_require__(4).config();
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__DB__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_sequelize__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_sequelize___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_sequelize__);
 
 
 
-
-// init lowdb singleton
-
-
-__WEBPACK_IMPORTED_MODULE_3__connector_DB__["a" /* default */].defaults({
-	persons: [],
-	count: 0
-}).write();
-
-const { resolvers, schema } = Object(__WEBPACK_IMPORTED_MODULE_0__getServerData__["a" /* default */])();
-const server = new __WEBPACK_IMPORTED_MODULE_2_apollo_server_express__["ApolloServer"]({ typeDefs: schema, resolvers });
-
-const app = __WEBPACK_IMPORTED_MODULE_1_express___default()();
-
-// { type: 'Query', query: '{}{}DAS{D{A}' }
-// /graphql
-// dds
-// /persons/getNamesFromPersons
-
-app.get('/world', (req, res) => res.send('hi!!'));
-
-server.applyMiddleware({ app });
-
-const port = 4000;
-
-app.listen({ port }, () => {
-	console.log(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`);
+const MTodo = __WEBPACK_IMPORTED_MODULE_0__DB__["a" /* default */].define('todo', {
+	title: __WEBPACK_IMPORTED_MODULE_1_sequelize___default.a.STRING(255),
+	description: __WEBPACK_IMPORTED_MODULE_1_sequelize___default.a.STRING(1024),
+	done: __WEBPACK_IMPORTED_MODULE_1_sequelize___default.a.BOOLEAN
 });
+
+/* harmony default export */ __webpack_exports__["a"] = (MTodo);
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
+module.exports = require("sequelize");
 
 /***/ }),
 /* 4 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-module.exports = require("dotenv");
+module.exports = __webpack_require__(5);
+
 
 /***/ }),
 /* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_merge_graphql_schemas__ = __webpack_require__(6);
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__getServerData__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_express__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_express___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_express__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_apollo_server_express__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_apollo_server_express___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_apollo_server_express__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__connector_DB__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__connector_models_MTodo__ = __webpack_require__(2);
+// load .env file into process.env global
+
+
+
+
+
+// init db singleton
+
+
+
+(async () => {
+	// Sync models to DB
+	await __WEBPACK_IMPORTED_MODULE_4__connector_models_MTodo__["a" /* default */].sync();
+
+	///////
+
+	const { resolvers, schema } = Object(__WEBPACK_IMPORTED_MODULE_0__getServerData__["a" /* default */])();
+	const server = new __WEBPACK_IMPORTED_MODULE_2_apollo_server_express__["ApolloServer"]({ typeDefs: schema, resolvers });
+
+	const app = __WEBPACK_IMPORTED_MODULE_1_express___default()();
+	// app.get('/world', (req,res) => res.send('hi!!'));
+	server.applyMiddleware({ app });
+
+	const port = 4000;
+
+	app.listen({ port }, () => {
+		console.log(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`);
+	});
+})();
+
+/***/ }),
+/* 6 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_merge_graphql_schemas__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_merge_graphql_schemas___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_merge_graphql_schemas__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_path__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_path__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_path___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_path__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__schema_schema__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__resolvers_index__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__schema_schema__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__resolvers_index__ = __webpack_require__(10);
 
 
 
@@ -189,111 +221,138 @@ module.exports = require("dotenv");
 });
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports) {
 
 module.exports = require("merge-graphql-schemas");
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports) {
 
 module.exports = require("path");
-
-/***/ }),
-/* 8 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_apollo_server_express__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_apollo_server_express___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_apollo_server_express__);
-
-
-const schema = __WEBPACK_IMPORTED_MODULE_0_apollo_server_express__["gql"]`
-	type Person {
-		id: Int!,
-		name: String!,
-		dateofbirth: String!
-	}
-	
-	type Query {
-		getPerson(id: Int!): Person,
-		getPersons: [Person],
-	}
-	
-	type Mutation {
-		createPerson(name: String!, dateofbirth: String!): Boolean!,
-		updatePerson(id: Int!, name: String, dateofbirth: String): Boolean!,
-		deletePerson(id: Int!): Boolean!,
-	}
-`;
-
-/* harmony default export */ __webpack_exports__["a"] = (schema);
 
 /***/ }),
 /* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__resolvers_Person__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_apollo_server_express__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_apollo_server_express___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_apollo_server_express__);
 
 
-/* harmony default export */ __webpack_exports__["a"] = ({
-	Query: {
-		getPerson: __WEBPACK_IMPORTED_MODULE_0__resolvers_Person__["a" /* default */].getPerson,
-		getPersons: __WEBPACK_IMPORTED_MODULE_0__resolvers_Person__["a" /* default */].getPersons
-	},
-	Mutation: {
-		createPerson: __WEBPACK_IMPORTED_MODULE_0__resolvers_Person__["a" /* default */].createPerson,
-		updatePerson: __WEBPACK_IMPORTED_MODULE_0__resolvers_Person__["a" /* default */].updatePerson,
-		deletePerson: __WEBPACK_IMPORTED_MODULE_0__resolvers_Person__["a" /* default */].deletePerson
+const schema = __WEBPACK_IMPORTED_MODULE_0_apollo_server_express__["gql"]`
+	type Todo {
+		id: ID!,
+        createdAt: String!,
+        updatedAt: String!,
+		title: String!,
+		description: String!,
+		done: Boolean!,
 	}
-});
+	
+	type Query {
+		getTodo(id: ID!): [Todo]!,
+		getTodos: [Todo]!,
+	}
+	type Mutation {
+		createTodo(title: String!, description: String!, done: Boolean!): Boolean!,
+		updateTodo(id: ID!, title: String!, description: String!, done: Boolean!): Boolean!,
+		deleteTodo(id: ID!): Boolean!,
+	}
+	
+`;
+
+/* harmony default export */ __webpack_exports__["a"] = (schema);
 
 /***/ }),
 /* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__connector_DB__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__resolvers_Todo__ = __webpack_require__(11);
 
 
-class Person {
+/* harmony default export */ __webpack_exports__["a"] = ({
+	Query: {
+		getTodo: __WEBPACK_IMPORTED_MODULE_0__resolvers_Todo__["a" /* default */].getTodo,
+		getTodos: __WEBPACK_IMPORTED_MODULE_0__resolvers_Todo__["a" /* default */].getTodos
+	},
+
+	Mutation: {
+		createTodo: __WEBPACK_IMPORTED_MODULE_0__resolvers_Todo__["a" /* default */].createTodo,
+		updateTodo: __WEBPACK_IMPORTED_MODULE_0__resolvers_Todo__["a" /* default */].updateTodo,
+		deleteTodo: __WEBPACK_IMPORTED_MODULE_0__resolvers_Todo__["a" /* default */].deleteTodo
+	}
+});
+
+/***/ }),
+/* 11 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__connector_models_MTodo__ = __webpack_require__(2);
+
+
+class Todo {
 	constructor() {
-		this.getPerson = (obj, { id }, context, info) => {
-			return __WEBPACK_IMPORTED_MODULE_0__connector_DB__["a" /* default */].get('persons').filter({ id }).first().value();
-		};
-
-		this.getPersons = (obj, { id }, context, info) => {
-			return __WEBPACK_IMPORTED_MODULE_0__connector_DB__["a" /* default */].get('persons').value();
-		};
-
-		this.createPerson = (obj, { name, dateofbirth }, context, info) => {
-			const persons = __WEBPACK_IMPORTED_MODULE_0__connector_DB__["a" /* default */].get('persons').last().value();
+		this.getTodo = async (obj, { id }, context, info) => {
 			try {
-				__WEBPACK_IMPORTED_MODULE_0__connector_DB__["a" /* default */].get('persons').push({ id: persons.id + 1, name, dateofbirth }).write();
+				return await __WEBPACK_IMPORTED_MODULE_0__connector_models_MTodo__["a" /* default */].findAll({
+					where: {
+						id
+					}
+				});
+			} catch (e) {
+				return [];
+			}
+		};
+
+		this.getTodos = async (obj, args, context, info) => {
+			try {
+				return await __WEBPACK_IMPORTED_MODULE_0__connector_models_MTodo__["a" /* default */].findAll();
+			} catch (e) {
+				return [];
+			}
+		};
+
+		this.createTodo = async (obj, { title, description, done }, context, info) => {
+			try {
+				await __WEBPACK_IMPORTED_MODULE_0__connector_models_MTodo__["a" /* default */].create({
+					title,
+					description,
+					done
+				});
 			} catch (e) {
 				return false;
 			}
 			return true;
 		};
 
-		this.updatePerson = (obj, { id, name, dateofbirth }, context, info) => {
+		this.updateTodo = async (obj, { id, title, description, done }, context, info) => {
 			try {
-				__WEBPACK_IMPORTED_MODULE_0__connector_DB__["a" /* default */].get('persons').find({ id }).assign({
-					id,
-					name,
-					dateofbirth
-				}).write();
+				await __WEBPACK_IMPORTED_MODULE_0__connector_models_MTodo__["a" /* default */].update({
+					title,
+					description,
+					done
+				}, {
+					where: {
+						id
+					}
+				});
 			} catch (e) {
 				return false;
 			}
 			return true;
 		};
 
-		this.deletePerson = (obj, { id }, context, info) => {
+		this.deleteTodo = async (obj, { id }, context, info) => {
 			try {
-				__WEBPACK_IMPORTED_MODULE_0__connector_DB__["a" /* default */].get('persons').remove({ id }).write();
+				await __WEBPACK_IMPORTED_MODULE_0__connector_models_MTodo__["a" /* default */].destroy({
+					where: {
+						id
+					}
+				});
 			} catch (e) {
 				return false;
 			}
@@ -303,29 +362,16 @@ class Person {
 
 }
 
-// export as singleton
-/* harmony default export */ __webpack_exports__["a"] = (new Person());
-
-/***/ }),
-/* 11 */
-/***/ (function(module, exports) {
-
-module.exports = require("mongoose");
+/* harmony default export */ __webpack_exports__["a"] = (new Todo());
 
 /***/ }),
 /* 12 */
 /***/ (function(module, exports) {
 
-module.exports = require("lowdb");
+module.exports = require("dotenv");
 
 /***/ }),
 /* 13 */
-/***/ (function(module, exports) {
-
-module.exports = require("lowdb/adapters/FileSync");
-
-/***/ }),
-/* 14 */
 /***/ (function(module, exports) {
 
 module.exports = require("express");
